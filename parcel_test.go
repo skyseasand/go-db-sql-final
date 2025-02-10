@@ -2,12 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"github.com/stretchr/testify/assert"
-	//"log"
 	"math/rand"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,6 +50,7 @@ func TestAddGetDelete(t *testing.T) {
 	storedParcel, err := store.Get(id)
 	require.NoError(t, err)
 	assert.Equal(t, parcel.Client, storedParcel.Client)
+	assert.Equal(t, parcel.Number, storedParcel.Number)
 	assert.Equal(t, parcel.Status, storedParcel.Status)
 	assert.Equal(t, parcel.Address, storedParcel.Address)
 	assert.Equal(t, parcel.CreatedAt, storedParcel.CreatedAt)
@@ -59,7 +59,7 @@ func TestAddGetDelete(t *testing.T) {
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что посылку больше нельзя получить из БД
 	err = store.Delete(id)
-	require.NoError(t, err)
+	require.Error(t, err)
 	_, err = store.Get(id)
 	assert.Equal(t, sql.ErrNoRows, err)
 }
@@ -155,7 +155,8 @@ func TestGetByClient(t *testing.T) {
 	// get by client
 	storedParcels, err := store.GetByClient(client) // получите список посылок по идентификатору клиента, сохранённого в переменной client
 	require.NoError(t, err)
-	require.Equal(t, len(parcels), len(storedParcels))
+	//require.Equal(t, len(parcels), len(storedParcels))
+	assert.Len(t, storedParcels, len(parcels))
 	// убедитесь в отсутствии ошибки
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
 
@@ -165,10 +166,8 @@ func TestGetByClient(t *testing.T) {
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
 		// убедитесь, что значения полей полученных посылок заполнены верно
 		expected, ok := parcelMap[parcel.Number]
-		require.True(t, ok)
-		assert.Equal(t, expected.Client, parcel.Client)
-		assert.Equal(t, expected.Status, parcel.Status)
-		assert.Equal(t, expected.Address, parcel.Address)
-		assert.Equal(t, expected.CreatedAt, parcel.CreatedAt)
+		assert.True(t, ok)
+		assert.Equal(t, expected, parcel)
+
 	}
 }
