@@ -49,19 +49,17 @@ func TestAddGetDelete(t *testing.T) {
 	// проверьте, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
 	storedParcel, err := store.Get(id)
 	require.NoError(t, err)
-	assert.Equal(t, parcel.Client, storedParcel.Client)
-	assert.Equal(t, parcel.Number, storedParcel.Number)
-	assert.Equal(t, parcel.Status, storedParcel.Status)
-	assert.Equal(t, parcel.Address, storedParcel.Address)
-	assert.Equal(t, parcel.CreatedAt, storedParcel.CreatedAt)
+	storedParcel.Number = 0
+	assert.Equal(t, parcel, storedParcel)
 
 	// delete
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что посылку больше нельзя получить из БД
 	err = store.Delete(id)
-	require.Error(t, err)
+	require.NoError(t, err)
 	_, err = store.Get(id)
-	assert.Equal(t, sql.ErrNoRows, err)
+	require.Error(t, err)
+	assert.ErrorIs(t, sql.ErrNoRows, err)
 }
 
 // TestSetAddress проверяет обновление адреса
